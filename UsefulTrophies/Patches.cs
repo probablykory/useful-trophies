@@ -86,6 +86,7 @@ namespace UsefulTrophies
         private static bool HumanoidUseItem(Humanoid __instance, Inventory inventory, ItemDrop.ItemData item, bool fromInventoryGui, Inventory ___m_inventory, ZSyncAnimation ___m_zanim)
         {
             string prefabName = item.m_dropPrefab.name;
+            string powerName;
 
             if (inventory == null)
             {
@@ -96,14 +97,29 @@ namespace UsefulTrophies
                 return false;
             }
 
-            if (UsefulTrophies.Instance.CanConsumeBossSummonItems && UsefulTrophies.Instance.SecondaryPowerDict.TryGetValue(prefabName, out string powerName))
+            if (UsefulTrophies.Instance.CanConsumeBossSummonItems && UsefulTrophies.Instance.SecondaryPowerDict.TryGetValue(prefabName, out powerName))
             {
                 StatusEffect bossPower = ObjectDB.instance.GetStatusEffect(powerName.GetStableHashCode());
                 if (!UsefulTrophies.Instance.SecondaryBossPowerValues.TryGetValue(prefabName, out int powerTime))
                 {
                     powerTime = 120;
                 }
-                
+
+
+                // Protection against eating summoning items near offering bowls
+                OfferingBowl[] offeringBowls = GameObject.FindObjectsOfType<OfferingBowl>();
+
+                // Check if we're near offering bowls which use this item
+                if (offeringBowls.Length > 0 && offeringBowls[0].m_bossItem.name == prefabName)
+                {
+                    // measure prevention distance
+                    if (Vector3.Distance(__instance.transform.position, offeringBowls[0].transform.position) < 10f)
+                    {
+                        Debug.Log("Prevented Player from consuming summon item near offering bowl");
+                        return true;
+                    }
+                }
+
                 ApplyStatusEffect(bossPower.Clone(), (float)powerTime, __instance.transform.position);
 
                 if (!UsefulTrophies.Instance.TrophyXPGoldValues.Value.Contains(prefabName))
@@ -122,38 +138,42 @@ namespace UsefulTrophies
             {
                 //string enemy = itemName.Substring(13);
 
-                if (!UsefulTrophies.Instance.CanConsumeBossTrophies) return true;
-                    
-                if (UsefulTrophies.Instance.BossPowerDict.TryGetValue(prefabName, out powerName))
+
+                if (UsefulTrophies.Instance.BossPowerDict.ContainsKey(prefabName))
                 {
-                    StatusEffect bossPower = ObjectDB.instance.GetStatusEffect(powerName.GetStableHashCode());
-                            
-                    // Protection against eating boss heads near unactivated boss stones
-                    BossStone[] bossStones = GameObject.FindObjectsOfType<BossStone>();
-                        
-                    // If we are near any boss stones, the find will find some
-                    if (bossStones.Length > 1 && bossStones[0].m_itemStand.m_netViewOverride.IsValid())
+                    if (!UsefulTrophies.Instance.CanConsumeBossTrophies) return true;
+
+                    if (UsefulTrophies.Instance.BossPowerDict.TryGetValue(prefabName, out powerName))
                     {
-                        // There may be duplicate stones, so find at least one active stone to confirm we have it handed in
-                        bool bossActived = false;
-                        foreach (var stone in bossStones)
+                        StatusEffect bossPower = ObjectDB.instance.GetStatusEffect(powerName.GetStableHashCode());
+
+                        // Protection against eating boss heads near unactivated boss stones
+                        BossStone[] bossStones = GameObject.FindObjectsOfType<BossStone>();
+
+                        // If we are near any boss stones, the find will find some
+                        if (bossStones.Length > 1 && bossStones[0].m_itemStand.m_netViewOverride.IsValid())
                         {
-                            if (stone.IsActivated() && bossPower.m_name == stone.m_itemStand.m_guardianPower.m_name)
+                            // There may be duplicate stones, so find at least one active stone to confirm we have it handed in
+                            bool bossActived = false;
+                            foreach (var stone in bossStones)
                             {
-                                bossActived = true;
-                                break;
+                                if (stone.IsActivated() && bossPower.m_name == stone.m_itemStand.m_guardianPower.m_name)
+                                {
+                                    bossActived = true;
+                                    break;
+                                }
+                            }
+
+                            if (!bossActived)
+                            {
+                                Debug.Log("Prevented Player from consuming boss trophy near BossStone");
+                                return true;
                             }
                         }
 
-                        if (!bossActived)
-                        {
-                            Debug.Log("Prevented Player from consuming boss trophy near BossStone");
-                            return true;
-                        }
+                        // Copy power so we dont effect the original data
+                        ApplyStatusEffect(bossPower.Clone(), UsefulTrophies.Instance.BossPowerDuration, __instance.transform.position);
                     }
-                        
-                    // Copy power so we dont effect the original data
-                    ApplyStatusEffect(bossPower.Clone(), UsefulTrophies.Instance.BossPowerDuration, __instance.transform.position);
                 }
                                 
                 // Prioritize Hover Objects (item stands/altars)

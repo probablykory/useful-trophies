@@ -65,6 +65,9 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 
 ### Changelist
 
+1.0.2
+* Bugfix: added a proximity check to prevent consuming summoning item when used near offering bowl.
+
 1.0.1
 * Bugfix for intermittent exception when consuming summoning items.
 * Bugfix for exception when consuming items via the hotbar.
