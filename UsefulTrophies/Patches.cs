@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using BepInEx;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
+using BepInEx;
 using HarmonyLib;
 using UnityEngine;
 
@@ -86,7 +86,15 @@ namespace UsefulTrophies
         private static bool HumanoidUseItem(Humanoid __instance, Inventory inventory, ItemDrop.ItemData item, bool fromInventoryGui, Inventory ___m_inventory, ZSyncAnimation ___m_zanim)
         {
             string prefabName = item.m_dropPrefab.name;
-            //string itemName = item.m_shared.m_name;
+
+            if (inventory == null)
+            {
+                inventory = ___m_inventory;
+            }
+            if (!inventory.ContainsItem(item))
+            {
+                return false;
+            }
 
             if (UsefulTrophies.Instance.CanConsumeBossSummonItems && UsefulTrophies.Instance.SecondaryPowerDict.TryGetValue(prefabName, out string powerName))
             {
@@ -147,16 +155,7 @@ namespace UsefulTrophies
                     // Copy power so we dont effect the original data
                     ApplyStatusEffect(bossPower.Clone(), UsefulTrophies.Instance.BossPowerDuration, __instance.transform.position);
                 }
-                
-                if (inventory == null)
-                {
-                    inventory = ___m_inventory;
-                }
-                if (!inventory.ContainsItem(item))
-                {
-                    return false;
-                }
-                
+                                
                 // Prioritize Hover Objects (item stands/altars)
                 GameObject hoverObject = __instance.GetHoverObject();
                 Hoverable hoverable = hoverObject ? hoverObject.GetComponentInParent<Hoverable>() : null;
@@ -215,11 +214,19 @@ namespace UsefulTrophies
             return true;
         }
 
+        //Player.GetPlayersInRange is now private static - use reflection
+        private static MethodInfo getPlayersInRange = null;
         private static void ApplyStatusEffect(StatusEffect statusEffect, float time, Vector3 position)
         {
+            if (getPlayersInRange == null)
+            {
+                getPlayersInRange = typeof(Player).GetMethod(nameof(Player.GetPlayersInRange), BindingFlags.Static | BindingFlags.NonPublic);
+            }
+
             statusEffect.m_ttl = time;
             List<Player> players = new List<Player>();
-            Player.GetPlayersInRange(position, 10f, players);
+
+            getPlayersInRange?.Invoke(null, new object[] { position, 10f, players });
             foreach (Player player in players)
             {
                 player.GetSEMan().AddStatusEffect(statusEffect, true);

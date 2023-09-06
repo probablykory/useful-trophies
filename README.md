@@ -30,7 +30,8 @@ Trophies now can also be sold for gold!
 
 ---
 
-Quick note from probablykory:  Khairex's UsefulTrophies is one of my favorite mods, but after waiting a couple weeks to see if they'd update for Hildir, I decided to fork and republish.  Due to several changes, I've changed the plugin GUID, version and icon to reflect this mod's rebirth.  Please see changelog to see more details of my changes.
+### Quick note from probablykory
+Khairex's UsefulTrophies is one of my favorite mods, but after waiting a couple weeks to see if they'd update for Hildir, I decided to fork and republish.  Due to several changes, I've changed the plugin GUID, version and icon to reflect this mod's rebirth.  Please see changelog to see more details of my changes.
 
 ---
 ## Installation (manual)
@@ -63,6 +64,10 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 ---
 
 ### Changelist
+
+1.0.1
+* Bugfix for intermittent exception when consuming summoning items.
+* Bugfix for exception when consuming items via the hotbar.
 
 1.0.0 
 * Forked from khairex's github repo
