@@ -18,6 +18,7 @@ namespace UsefulTrophies
         Exploration,
         Farming,
         Foraging,
+        Herbalist,
         Jewelcrafting,
         Lumberjacking,
         Mining,

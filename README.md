@@ -65,6 +65,16 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 
 ### Changelist
 
+1.0.3
+* Bugfix: Added several defenses against all the Null Reference exceptions people were seeing.
+* Grammer corrections.
+* Added a handful of Therzie's early trophies to the default config.
+* Added Herbalist to the list of custom skills.
+
+<details>
+<summary><i>View changelog history</i></summary>
+<br/>
+
 1.0.2
 * Bugfix: added a proximity check to prevent consuming summoning item when used near offering bowl.
 
@@ -77,6 +87,8 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 * Changed configuration to use Prefab names instead of token strings, to support 3rd party mod trophies.
 * Added a custom configuration drawer for the Trophies and Summoning Items lists.
 * Corrected the skill-up message when consuming a trophy, to display the english skill name of 3rd party skills.
+
+</details>
 
 ---
 

@@ -12,7 +12,7 @@ namespace UsefulTrophies
     {
         public const string PluginAuthor = "probablykory";
         public const string PluginName = "UsefulTrophies";
-        public const string PluginVersion = "1.0.2";
+        public const string PluginVersion = "1.0.3";
         public const string PluginGUID = PluginAuthor + "." + PluginName;
 
         public Harmony Harmony { get; } = new Harmony(PluginGUID);
@@ -51,8 +51,11 @@ namespace UsefulTrophies
             "TrophyBoar:4:10," +
             "TrophyNeck:10:10," +
             "TrophyGreydwarf:5:10," +
+            "TrophyFox_TW:15:20," + 
             "TrophyGreydwarfBrute:25:15," +
             "TrophyGreydwarfShaman:15:15," +
+            "TrophyRazorback_TW:15:15," +
+            "TrophyBlackBear_TW:15:15," + 
             "TrophySkeleton:10:10," +
             "TrophySkeletonPoison:25:15," +
             "TrophyFrostTroll:30:50," +
@@ -61,6 +64,7 @@ namespace UsefulTrophies
             "TrophyDraugr:20:15," +
             "TrophyDraugrElite:30:30," +
             "TrophyBlob:20:20," +
+            "TrophyRottingElk_TW:20:20," + 
             "TrophyWraith:30:30," +
             "TrophyAbomination:100:100," +
             "TrophyWolf:35:25," +

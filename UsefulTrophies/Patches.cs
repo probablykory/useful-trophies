@@ -35,7 +35,11 @@ namespace UsefulTrophies
         public static string ItemDataGetTooltip(string __result, ItemDrop.ItemData item)
         {
             string result = __result;
-            string name = item.m_dropPrefab.name;
+            string name = item?.m_dropPrefab?.name;
+            if (string.IsNullOrEmpty(name))
+            {
+                return result;
+            }
 
             if (UsefulTrophies.Instance.TrophyXPGoldValues.Value.Contains(name) || (UsefulTrophies.Instance.CanConsumeBossSummonItems && UsefulTrophies.Instance.SecondaryBossPowerValues.ContainsKey(name)))
             {
@@ -55,7 +59,7 @@ namespace UsefulTrophies
                     duration = UsefulTrophies.Instance.BossPowerDuration;
                     //Debug.Log($"{name} has bosspower of {bossPower} {duration}!");
                 }
-                if ((bossPower.IsNullOrWhiteSpace() || duration == 0) &&
+                if ((string.IsNullOrWhiteSpace(bossPower) || duration == 0) &&
                     UsefulTrophies.Instance.CanConsumeBossSummonItems &&
                     UsefulTrophies.Instance.SecondaryPowerDict.TryGetValue(name, out bossPower))
                 {
@@ -63,7 +67,7 @@ namespace UsefulTrophies
                     //Debug.Log($"{name} has secondary power of {bossPower} {duration}!");
                 }
 
-                if (!bossPower.IsNullOrWhiteSpace() && duration > 0)
+                if (!string.IsNullOrWhiteSpace(bossPower) && duration > 0)
                 {
                     bossPower = bossPower.Substring(3);
                     if (xp > 0)
@@ -85,9 +89,13 @@ namespace UsefulTrophies
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UseItem)), HarmonyPrefix]
         private static bool HumanoidUseItem(Humanoid __instance, Inventory inventory, ItemDrop.ItemData item, bool fromInventoryGui, Inventory ___m_inventory, ZSyncAnimation ___m_zanim)
         {
-            string prefabName = item.m_dropPrefab.name;
+            string prefabName = item?.m_dropPrefab?.name;
             string powerName;
 
+            if (string.IsNullOrEmpty(prefabName))
+            {
+                return false;
+            }
             if (inventory == null)
             {
                 inventory = ___m_inventory;
@@ -227,7 +235,7 @@ namespace UsefulTrophies
                 ___m_zanim.SetTrigger("eat");
 
                 // Notify Player of the Stat Increase
-                __instance.Message(MessageHud.MessageType.Center, $"You increase skill with {skillName}", 0, null);
+                __instance.Message(MessageHud.MessageType.Center, $"You increase your skill with {skillName}", 0, null);
                 return false;
             }
 
