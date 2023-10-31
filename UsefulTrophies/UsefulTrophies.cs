@@ -12,7 +12,7 @@ namespace UsefulTrophies
     {
         public const string PluginAuthor = "probablykory";
         public const string PluginName = "UsefulTrophies";
-        public const string PluginVersion = "1.0.3";
+        public const string PluginVersion = "1.0.5";
         public const string PluginGUID = PluginAuthor + "." + PluginName;
 
         public Harmony Harmony { get; } = new Harmony(PluginGUID);

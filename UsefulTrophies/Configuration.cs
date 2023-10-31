@@ -262,7 +262,7 @@ namespace UsefulTrophies
                     if (GUILayout.Button("+", new GUIStyle(GUI.skin.button) { fixedWidth = 21 }))
                     {
                         wasUpdated = true;
-                        newBossPowers.Add(new BossPowerConfig { Prefab = "", Duration = 120 });
+                        newBossPowers.Add(new BossPowerConfig { Prefab = "<Prefab Name>", Duration = 120 });
                     }
 
                     GUILayout.EndHorizontal();

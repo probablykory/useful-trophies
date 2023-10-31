@@ -1,7 +1,7 @@
 {
   "name": "UsefulTrophies",
   "description": "Improve your stats by consuming trophies while reducing inventory clutter.  Originally by Khairex.",
-  "version_number": "1.0.3",
+  "version_number": "1.0.5",
   "website_url": "https://github.com/probablykory/useful-trophies",
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2105"

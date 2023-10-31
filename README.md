@@ -65,15 +65,21 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 
 ### Changelist
 
+1.0.5
+* Replaced Skills list with a reverse-skill lookup relying on localization to provide the name of the skill.  This should work correctly with Jotunn and SkillManager based skills.
+
+<details>
+<summary><i>View changelog history</i></summary>
+<br/>
+
+1.0.4
+* Added additional 3rd party skills to custom skill list.
+
 1.0.3
 * Bugfix: Added several defenses against all the Null Reference exceptions people were seeing.
 * Grammer corrections.
 * Added a handful of Therzie's early trophies to the default config.
 * Added Herbalist to the list of custom skills.
-
-<details>
-<summary><i>View changelog history</i></summary>
-<br/>
 
 1.0.2
 * Bugfix: added a proximity check to prevent consuming summoning item when used near offering bowl.
