@@ -67,6 +67,7 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 
 1.0.6
 * Added a skills whitelist and some detection code to see which skills are maxed or have skillups locked.  Provides better compatibility with the Professions mod, and potentially other mods which lock XP skillups.
+* Added a reset button to the F1 config to rerun the whitelist detection code.
 
 <details>
 <summary><i>View changelog history</i></summary>
