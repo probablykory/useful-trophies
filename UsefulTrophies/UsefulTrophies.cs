@@ -124,6 +124,8 @@ namespace UsefulTrophies
             {"GoblinTotem", "GP_Yagluth"},
             {"DvergrKeyFragment", "GP_Queen"}
         };
+
+        public List<Skills.SkillType> WhitelistedSkills = new List<Skills.SkillType>();
         
         private void Awake()
         {

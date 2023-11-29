@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using BepInEx;
@@ -85,6 +87,55 @@ namespace UsefulTrophies
             return result;
         }
 
+        [HarmonyPatch(typeof(Player), nameof(Player.Load)), HarmonyPostfix]
+        private static void PlayerOnLoad(Player __instance)
+        {
+            if (Player.m_localPlayer == null)
+                return;
+
+            UsefulTrophies.Instance.WhitelistedSkills.Clear();
+
+            Skills skills = __instance.GetSkills();
+            float level;
+            float accumulator;
+
+            MessageHud hudInstance = MessageHud.m_instance;
+            MessageHud.m_instance = null;
+            EffectList playerLvlEffects = __instance.m_skillLevelupEffects;
+            __instance.m_skillLevelupEffects = new EffectList();
+
+            try
+            {
+                foreach (Skills.Skill skill in skills.GetSkillList())
+                {
+                    level = skill.m_level;
+                    accumulator = skill.m_accumulator;
+
+                    skills.RaiseSkill(skill.m_info.m_skill);
+
+                    if (level == skill.m_level && accumulator == skill.m_accumulator)
+                    {
+                        skill.m_level = level;
+                        skill.m_accumulator = accumulator;
+                    }
+                    else
+                    {
+                        UsefulTrophies.Instance.WhitelistedSkills.Add(skill.m_info.m_skill);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Caught error while detecting skill whitelist. Exception:\n{ex}");
+                UsefulTrophies.Instance.WhitelistedSkills.Clear();
+                UsefulTrophies.Instance.WhitelistedSkills.AddRange(skills.GetSkillList().Select(s => s.m_info.m_skill));
+            }
+            finally
+            {
+                MessageHud.m_instance = hudInstance;
+                __instance.m_skillLevelupEffects = playerLvlEffects;
+            }
+        }
 
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UseItem)), HarmonyPrefix]
         private static bool HumanoidUseItem(Humanoid __instance, Inventory inventory, ItemDrop.ItemData item, bool fromInventoryGui, Inventory ___m_inventory, ZSyncAnimation ___m_zanim)
@@ -199,9 +250,8 @@ namespace UsefulTrophies
                 Debug.Log($"Consume {prefabName}!");
 
                 // Get a Random Skill from the Player's Skill Pool
-                List<Skills.Skill> skills = __instance.GetSkills().GetSkillList();
-                Skills.Skill randomSkill = skills[UnityEngine.Random.Range(0, skills.Count)];
-                string skillName = Utils.FromSkill(randomSkill.m_info.m_skill);
+                List<Skills.Skill> skills = __instance.GetSkills().GetSkillList()
+                    .Where(s => UsefulTrophies.Instance.WhitelistedSkills.Contains(s.m_info.m_skill)).ToList();
 
                 float skillFactor = 10f;
                 if (UsefulTrophies.Instance.TrophyXPValues.TryGetValue(prefabName, out int dictSkillFactor))
@@ -212,17 +262,29 @@ namespace UsefulTrophies
                 {
                     Debug.Log($"No XP value for prefab {prefabName}!");
                 }
-                
-                Debug.Log($"Raising {skillName} by {skillFactor}");
+
+                Skills.Skill randomSkill = skills[UnityEngine.Random.Range(0, skills.Count)];
+                string skillName = Utils.FromSkill(randomSkill.m_info.m_skill);
 
                 float req = GetNextLevelRequirement(randomSkill) - randomSkill.m_accumulator;
-                
-                // Increase Skill by Configured Skill Factor
+                float level = randomSkill.m_level;
+                float accumulator = randomSkill.m_accumulator;
                 __instance.RaiseSkill(randomSkill.m_info.m_skill, skillFactor);
-                skillFactor -= req;
 
-                // Handle multi-levelUps
-                while (skillFactor > 0f)
+                if (level == randomSkill.m_level && accumulator == randomSkill.m_accumulator)
+                {
+                    UsefulTrophies.Instance.WhitelistedSkills.Remove(randomSkill.m_info.m_skill);
+                    skills.Remove(randomSkill);
+
+                    randomSkill = skills[UnityEngine.Random.Range(0, skills.Count)];
+                    skillName = Utils.FromSkill(randomSkill.m_info.m_skill);
+                    req = GetNextLevelRequirement(randomSkill) - randomSkill.m_accumulator;
+                    __instance.RaiseSkill(randomSkill.m_info.m_skill, skillFactor);
+                }
+
+                Debug.Log($"Raising {skillName} by {skillFactor}");
+                skillFactor -= req;
+                while (skillFactor > 0f) // Handle multi-levelUps
                 {
                     req = GetNextLevelRequirement(randomSkill);
                     __instance.RaiseSkill(randomSkill.m_info.m_skill, skillFactor);
