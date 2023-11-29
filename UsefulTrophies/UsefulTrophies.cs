@@ -4,6 +4,7 @@ using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using UnityEngine;
 
 namespace UsefulTrophies
 {
@@ -12,7 +13,7 @@ namespace UsefulTrophies
     {
         public const string PluginAuthor = "probablykory";
         public const string PluginName = "UsefulTrophies";
-        public const string PluginVersion = "1.0.5";
+        public const string PluginVersion = "1.0.6";
         public const string PluginGUID = PluginAuthor + "." + PluginName;
 
         public Harmony Harmony { get; } = new Harmony(PluginGUID);
@@ -146,6 +147,15 @@ namespace UsefulTrophies
                  new AcceptableValueConfigNote("You must use valid spawn item codes or this will not work."),
                  ConfigHelper.GetTags(ConfigDrawers.DrawBossPowerConfigTable())));
 
+            Instance.Config(category, "resetWhitelist", 0, 
+                new ConfigDescription("", null, new object[] {
+                new ConfigurationManagerAttributes
+                {
+                    HideSettingName = new bool?(true),
+                    HideDefaultButton = new bool?(true),
+                    CustomDrawer = new Action<ConfigEntryBase>(ConfigDrawers.DrawConfigActionButton("Reset list of boostable skills", new Action(() => Instance.DetectAndWhitelistSkills())))
+                }}));
+
             TrophyXPGoldValues.SettingChanged += RefreshDictionaries;
             SecondaryBossPowerDurations.SettingChanged += RefreshDictionaries;
             RefreshDictionaries(null, null);
@@ -161,6 +171,57 @@ namespace UsefulTrophies
             TrophyCoinValues = trophies.ToDictionary(t => t.Prefab, t => t.Value);
             TrophyXPValues = trophies.ToDictionary(t => t.Prefab, t => t.Experience);
             SecondaryBossPowerValues = powers.ToDictionary(t => t.Prefab, t => t.Duration);
+        }
+
+        public void DetectAndWhitelistSkills(Player player = null)
+        {
+            if (player == null)
+                player = Player.m_localPlayer;
+            if (player == null)
+                return;
+
+            Instance.WhitelistedSkills.Clear();
+
+            Skills skills = player.GetSkills();
+            float level;
+            float accumulator;
+
+            MessageHud hudInstance = MessageHud.m_instance;
+            MessageHud.m_instance = null;
+            EffectList playerLvlEffects = player.m_skillLevelupEffects;
+            player.m_skillLevelupEffects = new EffectList();
+
+            try
+            {
+                foreach (Skills.Skill skill in skills.GetSkillList())
+                {
+                    level = skill.m_level;
+                    accumulator = skill.m_accumulator;
+
+                    skills.RaiseSkill(skill.m_info.m_skill);
+
+                    if (level == skill.m_level && accumulator == skill.m_accumulator)
+                    {
+                        skill.m_level = level;
+                        skill.m_accumulator = accumulator;
+                    }
+                    else
+                    {
+                        Instance.WhitelistedSkills.Add(skill.m_info.m_skill);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"Caught error while detecting skill whitelist. Exception:\n{ex}");
+                Instance.WhitelistedSkills.Clear();
+                Instance.WhitelistedSkills.AddRange(skills.GetSkillList().Select(s => s.m_info.m_skill));
+            }
+            finally
+            {
+                MessageHud.m_instance = hudInstance;
+                player.m_skillLevelupEffects = playerLvlEffects;
+            }
         }
     }
 }

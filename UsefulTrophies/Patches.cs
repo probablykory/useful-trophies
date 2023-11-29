@@ -93,48 +93,7 @@ namespace UsefulTrophies
             if (Player.m_localPlayer == null)
                 return;
 
-            UsefulTrophies.Instance.WhitelistedSkills.Clear();
-
-            Skills skills = __instance.GetSkills();
-            float level;
-            float accumulator;
-
-            MessageHud hudInstance = MessageHud.m_instance;
-            MessageHud.m_instance = null;
-            EffectList playerLvlEffects = __instance.m_skillLevelupEffects;
-            __instance.m_skillLevelupEffects = new EffectList();
-
-            try
-            {
-                foreach (Skills.Skill skill in skills.GetSkillList())
-                {
-                    level = skill.m_level;
-                    accumulator = skill.m_accumulator;
-
-                    skills.RaiseSkill(skill.m_info.m_skill);
-
-                    if (level == skill.m_level && accumulator == skill.m_accumulator)
-                    {
-                        skill.m_level = level;
-                        skill.m_accumulator = accumulator;
-                    }
-                    else
-                    {
-                        UsefulTrophies.Instance.WhitelistedSkills.Add(skill.m_info.m_skill);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning($"Caught error while detecting skill whitelist. Exception:\n{ex}");
-                UsefulTrophies.Instance.WhitelistedSkills.Clear();
-                UsefulTrophies.Instance.WhitelistedSkills.AddRange(skills.GetSkillList().Select(s => s.m_info.m_skill));
-            }
-            finally
-            {
-                MessageHud.m_instance = hudInstance;
-                __instance.m_skillLevelupEffects = playerLvlEffects;
-            }
+            UsefulTrophies.Instance.DetectAndWhitelistSkills(__instance);
         }
 
         [HarmonyPatch(typeof(Humanoid), nameof(Humanoid.UseItem)), HarmonyPrefix]

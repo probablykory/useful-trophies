@@ -65,12 +65,15 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 
 ### Changelist
 
-1.0.5
-* Replaced Skills list with a reverse-skill lookup relying on localization to provide the name of the skill.  This should work correctly with Jotunn and SkillManager based skills.
+1.0.6
+* Added a skills whitelist and some detection code to see which skills are maxed or have skillups locked.  Provides better compatibility with the Professions mod, and potentially other mods which lock XP skillups.
 
 <details>
 <summary><i>View changelog history</i></summary>
 <br/>
+
+1.0.5
+* Replaced Skills list with a reverse-skill lookup relying on localization to provide the name of the skill.  This should work correctly with Jotunn and SkillManager based skills.
 
 1.0.4
 * Added additional 3rd party skills to custom skill list.

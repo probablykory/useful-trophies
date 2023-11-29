@@ -277,5 +277,23 @@ namespace UsefulTrophies
             };
         }
 
+        public static Action<ConfigEntryBase> DrawConfigActionButton(string buttonName, Action buttonAction)
+        {
+            return cfg =>
+            {
+                GUILayout.BeginVertical(Array.Empty<GUILayoutOption>());
+
+                if (GUILayout.Button(buttonName, new GUILayoutOption[] { GUILayout.ExpandWidth(true) }))
+                {
+                    if (buttonAction != null)
+                    {
+                        buttonAction();
+                    }
+                }
+                
+                GUILayout.EndVertical();
+            };
+        }
+
     }
 }
