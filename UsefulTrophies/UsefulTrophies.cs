@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -186,8 +187,9 @@ namespace UsefulTrophies
             float level;
             float accumulator;
 
-            MessageHud hudInstance = MessageHud.m_instance;
-            MessageHud.m_instance = null;
+            FieldInfo msiField = AccessTools.Field(typeof(MessageHud), nameof(MessageHud.m_instance));
+            MessageHud hudInstance = msiField.GetValue(null) as MessageHud;
+            msiField.SetValue(null, null);
             EffectList playerLvlEffects = player.m_skillLevelupEffects;
             player.m_skillLevelupEffects = new EffectList();
 
@@ -219,7 +221,7 @@ namespace UsefulTrophies
             }
             finally
             {
-                MessageHud.m_instance = hudInstance;
+                msiField.SetValue(null, hudInstance);
                 player.m_skillLevelupEffects = playerLvlEffects;
             }
         }
