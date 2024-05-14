@@ -1,5 +1,5 @@
 ![Splash](https://raw.githubusercontent.com/probablykory/useful-trophies/main/splash.jpg)  
-Improve your stats by consuming trophies while reducing inventory clutter.  Originally by Khairex.
+Improve your stats while reducing inventory clutter by consuming trophies.  Originally by Khairex.
 
 # Useful Trophies
 
@@ -65,16 +65,21 @@ SummoningItems: The list of summoning item Prefab names to Duration of boss powe
 
 ### Changelist
 
+2.1.0
+* Updated for Ashlands, added new trophies and bosspower.  Delete your config if you're having issues with new trophies.
+* Large version bump to ensure bots (and sometimes people) realize this is the latest UsefulTrophies mod, not Khairex's or Maximus'
+
+<details>
+<summary><i>View changelog history</i></summary>
+<br/>
+
+
 1.0.7
 * Fixed access exception a handful of players encountered with 1.0.6 update.
 
 1.0.6
 * Added a skills whitelist and some detection code to see which skills are maxed or have skillups locked.  Provides better compatibility with the Professions mod, and potentially other mods which lock XP skillups.
 * Added a reset button to the F1 config to rerun the whitelist detection code.
-
-<details>
-<summary><i>View changelog history</i></summary>
-<br/>
 
 1.0.5
 * Replaced Skills list with a reverse-skill lookup relying on localization to provide the name of the skill.  This should work correctly with Jotunn and SkillManager based skills.

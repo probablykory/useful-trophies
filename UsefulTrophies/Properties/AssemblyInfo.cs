@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle(UsefulTrophies.UsefulTrophies.PluginName)]
-[assembly: AssemblyDescription("https://valheim.thunderstore.io/package/probablykory/UsefulTrophies/")]
+[assembly: AssemblyDescription("https://thunderstore.io/c/valheim/p/probablykory/UsefulTrophies/")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany(UsefulTrophies.UsefulTrophies.PluginAuthor)]
 [assembly: AssemblyProduct(UsefulTrophies.UsefulTrophies.PluginName)]
-[assembly: AssemblyCopyright("Copyright " + UsefulTrophies.UsefulTrophies.PluginAuthor + " © 2023")]
+[assembly: AssemblyCopyright("Copyright " + UsefulTrophies.UsefulTrophies.PluginAuthor + " © 2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

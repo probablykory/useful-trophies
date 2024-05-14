@@ -14,12 +14,11 @@ namespace UsefulTrophies
     {
         public const string PluginAuthor = "probablykory";
         public const string PluginName = "UsefulTrophies";
-        public const string PluginVersion = "1.0.7";
+        public const string PluginVersion = "2.1.0";
         public const string PluginGUID = PluginAuthor + "." + PluginName;
 
         public Harmony Harmony { get; } = new Harmony(PluginGUID);
         public static UsefulTrophies Instance;
-
 
         public List<TrophyConfig> TrophyConfigs = new List<TrophyConfig>();
         public Dictionary<string, int> TrophyCoinValues = new Dictionary<string, int>();
@@ -53,11 +52,11 @@ namespace UsefulTrophies
             "TrophyBoar:4:10," +
             "TrophyNeck:10:10," +
             "TrophyGreydwarf:5:10," +
-            "TrophyFox_TW:15:20," + 
+            "TrophyFox_TW:15:20," +
             "TrophyGreydwarfBrute:25:15," +
             "TrophyGreydwarfShaman:15:15," +
             "TrophyRazorback_TW:15:15," +
-            "TrophyBlackBear_TW:15:15," + 
+            "TrophyBlackBear_TW:15:15," +
             "TrophySkeleton:10:10," +
             "TrophySkeletonPoison:25:15," +
             "TrophyFrostTroll:30:50," +
@@ -66,7 +65,7 @@ namespace UsefulTrophies
             "TrophyDraugr:20:15," +
             "TrophyDraugrElite:30:30," +
             "TrophyBlob:20:20," +
-            "TrophyRottingElk_TW:20:20," + 
+            "TrophyRottingElk_TW:20:20," +
             "TrophyWraith:30:30," +
             "TrophyAbomination:100:100," +
             "TrophyWolf:35:25," +
@@ -97,7 +96,16 @@ namespace UsefulTrophies
             "TrophySkeletonHildir:80:100," +
             "TrophyCultist_Hildir:300:200," +
             "TrophyGoblinBruteBrosBrute:600:300," +
-            "TrophyGoblinBruteBrosShaman:600:300";
+            "TrophyGoblinBruteBrosShaman:600:300," +
+            "TrophyAsksvin:120:100," +
+            "TrophyVolture:80:50," +
+            "TrophyBonemawSerpent:200:100," +
+            "TrophyCharredArcher:100:50," +
+            "TrophyCharredMelee:100:70," +
+            "TrophyCharredMage:100:70," +
+            "TrophyFallenValkyrie:200:100," +
+            "TrophyMorgen:200:100," +
+            "TrophyFader:1000:0";
 
         public const string DefaultSecondaryBossPowerDurations =
             "TrophyDeer:120," +
@@ -105,8 +113,9 @@ namespace UsefulTrophies
             "WitheredBone:120," +
             "DragonEgg:300," +
             "GoblinTotem:120," +
-            "DvergrKeyFragment:120";
-        
+            "DvergrKeyFragment:120," +
+            "BellFragment:120";
+
         public Dictionary<string, string> BossPowerDict = new Dictionary<string, string>()
         {
             {"TrophyEikthyr", "GP_Eikthyr"},
@@ -115,6 +124,7 @@ namespace UsefulTrophies
             {"TrophyDragonQueen", "GP_Moder"},
             {"TrophyGoblinKing", "GP_Yagluth"},
             {"TrophySeekerQueen", "GP_Queen"},
+            {"TrophyFader", "GP_Fader"},
         };
         
         public Dictionary<string, string> SecondaryPowerDict = new Dictionary<string, string>()
@@ -124,7 +134,8 @@ namespace UsefulTrophies
             {"WitheredBone", "GP_Bonemass"},
             {"DragonEgg", "GP_Moder"},
             {"GoblinTotem", "GP_Yagluth"},
-            {"DvergrKeyFragment", "GP_Queen"}
+            {"DvergrKeyFragment", "GP_Queen"},
+            {"BellFragment", "GP_Fader"}
         };
 
         public List<Skills.SkillType> WhitelistedSkills = new List<Skills.SkillType>();
