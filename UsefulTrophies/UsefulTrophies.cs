@@ -5,6 +5,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using ServerSync;
 using UnityEngine;
 
 namespace UsefulTrophies
@@ -14,7 +15,7 @@ namespace UsefulTrophies
     {
         public const string PluginAuthor = "probablykory";
         public const string PluginName = "UsefulTrophies";
-        public const string PluginVersion = "2.1.0";
+        public const string PluginVersion = "2.2.0";
         public const string PluginGUID = PluginAuthor + "." + PluginName;
 
         public Harmony Harmony { get; } = new Harmony(PluginGUID);
@@ -25,6 +26,8 @@ namespace UsefulTrophies
         public Dictionary<string, int> TrophyXPValues = new Dictionary<string, int>();
         public Dictionary<string, int> SecondaryBossPowerValues = new Dictionary<string, int>();
 
+
+        public ConfigEntry<Toggle> serverConfigLocked = null!;
 
         public ConfigEntry<bool> CanConsumeBossSummonItemsEntry { get; set; } = null;
         public bool CanConsumeBossSummonItems { get {
@@ -139,12 +142,25 @@ namespace UsefulTrophies
         };
 
         public List<Skills.SkillType> WhitelistedSkills = new List<Skills.SkillType>();
-        
+
+        public ConfigSync ConfigSync { get { return configSync; } }
+        internal readonly ConfigSync configSync = new(PluginGUID)
+        { DisplayName = PluginName, CurrentVersion = PluginVersion, MinimumRequiredVersion = PluginVersion };
+
+        public enum Toggle
+        {
+            On = 1,
+            Off = 0
+        }
+
         private void Awake()
         {
             Instance = this;
 
             var category = "General";
+
+            serverConfigLocked = Instance.Config("Admin", "Lock Configuration", Toggle.On, "If on, the configuration is locked and can be changed by server admins only.");
+            _ = ConfigSync.AddLockingConfigEntry(serverConfigLocked);
 
             CanConsumeBossSummonItemsEntry  = Instance.Config(category, "CanConsumeBossSummonItems", true, "Allows you to consume boss summoning items for a short boss power buff.");
             CanConsumeBossTrophiesEntry = Instance.Config(category, "CanConsumeBossTrophies", true, "Allows you to consume boss trophies.");
@@ -159,20 +175,23 @@ namespace UsefulTrophies
                  new AcceptableValueConfigNote("You must use valid spawn item codes or this will not work."),
                  ConfigHelper.GetTags(ConfigDrawers.DrawBossPowerConfigTable())));
 
-            Instance.Config(category, "resetWhitelist", 0, 
-                new ConfigDescription("", null, new object[] {
+            Instance.Config(category, "zresetWhitelist", 0, 
+                new ConfigDescription("Just ignore this.", null, new object[] {
                 new ConfigurationManagerAttributes
                 {
                     HideSettingName = new bool?(true),
                     HideDefaultButton = new bool?(true),
                     CustomDrawer = new Action<ConfigEntryBase>(ConfigDrawers.DrawConfigActionButton("Reset list of boostable skills", new Action(() => Instance.DetectAndWhitelistSkills())))
-                }}));
+                }}), false);
 
             TrophyXPGoldValues.SettingChanged += RefreshDictionaries;
             SecondaryBossPowerDurations.SettingChanged += RefreshDictionaries;
+            Config.ConfigReloaded += RefreshDictionaries;
             RefreshDictionaries(null, null);
 
             Harmony.PatchAll();
+
+            _ = new ConfigWatcher(this);
         }
 
         private void RefreshDictionaries(object sender, EventArgs e)

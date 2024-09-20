@@ -8,6 +8,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using ServerSync;
+using System.IO;
+using UnityEngine.Rendering;
 
 namespace UsefulTrophies
 {
@@ -74,6 +77,7 @@ namespace UsefulTrophies
     public interface IPlugin
     {
         ConfigFile Config { get; }
+        ConfigSync ConfigSync { get; }
     }
 
     // use bepinex ConfigEntry settings
@@ -93,12 +97,23 @@ namespace UsefulTrophies
             return new ConfigurationManagerAttributes();
         }
 
-        public static ConfigEntry<T> Config<T>(this IPlugin instance, string group, string name, T value, ConfigDescription description)
+        public static ConfigEntry<T> Config<T>(this IPlugin self, string group, string name, T value, ConfigDescription description, bool synchronizedSetting = true)
         {
-            return instance.Config.Bind(group, name, value, description);
+            ConfigDescription extendedDescription =
+                new(description.Description +
+                    (synchronizedSetting ? " [Synced with Server]" : " [Not Synced with Server]"),
+                    description.AcceptableValues, description.Tags);
+
+            ConfigEntry<T> configEntry = self.Config.Bind(group, name, value, extendedDescription);
+            SyncedConfigEntry<T> syncedConfigEntry = self.ConfigSync.AddConfigEntry(configEntry);
+            syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
+
+            return configEntry;
         }
 
-        public static ConfigEntry<T> Config<T>(this IPlugin instance, string group, string name, T value, string description) => Config(instance, group, name, value, new ConfigDescription(description, null, GetTags()));
+        public static ConfigEntry<T> Config<T>(this IPlugin instance, string group, string name, T value, string description, bool synchronizedSetting = true) => Config(instance, group, name, value, new ConfigDescription(description, null, GetTags()), synchronizedSetting);
+
+
     }
 
     public class AcceptableValueConfigNote : AcceptableValueBase
@@ -295,5 +310,127 @@ namespace UsefulTrophies
             };
         }
 
+    }
+
+
+    public class ConfigWatcher
+    {
+        private BaseUnityPlugin configurationManager;
+        private IPlugin plugin;
+
+        public ConfigWatcher(IPlugin plugin)
+        {
+            if (plugin == null)
+            {
+                throw new ArgumentNullException(nameof(plugin));
+            }
+
+            this.plugin = plugin;
+            CheckForConfigManager();
+        }
+
+        private void InitializeWatcher()
+        {
+            string file = Path.GetFileName(plugin.Config.ConfigFilePath);
+            string path = Path.GetDirectoryName(plugin.Config.ConfigFilePath);
+
+            var watcher = new Watcher(path, file);
+            watcher.FileChanged += OnFileChanged;
+        }
+
+        private void CheckForConfigManager()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) //isHeadless
+            {
+                InitializeWatcher();
+            }
+            else
+            {
+                PluginInfo configManagerInfo;
+                if (Chainloader.PluginInfos.TryGetValue("com.bepis.bepinex.configurationmanager", out configManagerInfo) && configManagerInfo.Instance)
+                {
+                    this.configurationManager = configManagerInfo.Instance;
+                    EventInfo eventinfo = this.configurationManager.GetType().GetEvent("DisplayingWindowChanged");
+                    if (eventinfo != null)
+                    {
+                        Action<object, object> local = new Action<object, object>(this.OnConfigManagerDisplayingWindowChanged);
+                        Delegate converted = Delegate.CreateDelegate(eventinfo.EventHandlerType, local.Target, local.Method);
+                        eventinfo.AddEventHandler(this.configurationManager, converted);
+                    }
+                }
+                else
+                {
+                    InitializeWatcher();
+                }
+            }
+        }
+
+        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            string path = plugin.Config.ConfigFilePath;
+
+            if (!File.Exists(path))
+            {
+                return;
+            }
+
+            try
+            {
+                plugin.Config.SaveOnConfigSet = false;
+                plugin.Config.Reload();
+                plugin.Config.SaveOnConfigSet = true;
+            }
+            catch
+            {
+                Debug.LogError("There was an issue with your " + Path.GetFileName(path) + " file.");
+                Debug.LogError("Please check the format and spelling.");
+                return;
+            }
+        }
+
+        private void OnConfigManagerDisplayingWindowChanged(object sender, object e)
+        {
+            PropertyInfo pi = this.configurationManager.GetType().GetProperty("DisplayingWindow");
+            bool cmActive = (bool)pi.GetValue(this.configurationManager, null);
+
+            if (!cmActive)
+            {
+                plugin.Config.SaveOnConfigSet = false;
+                plugin.Config.Reload();
+                plugin.Config.SaveOnConfigSet = true;
+            }
+        }
+    }
+
+    public class Watcher
+    {
+        public event Action<object, FileSystemEventArgs>? FileChanged;
+
+        public bool EnableRaisingEvents
+        {
+            get { return fileSystemWatcher == null ? false : fileSystemWatcher.EnableRaisingEvents; }
+            set { if (fileSystemWatcher != null) { fileSystemWatcher.EnableRaisingEvents = value; } }
+        }
+
+        private FileSystemWatcher fileSystemWatcher = null!;
+
+        public Watcher(string path, string filter)
+        {
+            if (path == null) { throw new ArgumentNullException("path"); }
+            if (filter == null) { throw new ArgumentNullException("filter"); }
+
+            fileSystemWatcher = new FileSystemWatcher(path, filter);
+            fileSystemWatcher.Changed += OnCreatedChangedOrRenamed;
+            fileSystemWatcher.Created += OnCreatedChangedOrRenamed;
+            fileSystemWatcher.Renamed += OnCreatedChangedOrRenamed;
+            fileSystemWatcher.IncludeSubdirectories = true;
+            fileSystemWatcher.SynchronizingObject = ThreadingHelper.SynchronizingObject;
+            fileSystemWatcher.EnableRaisingEvents = true;
+        }
+
+        private void OnCreatedChangedOrRenamed(object sender, FileSystemEventArgs args)
+        {
+            FileChanged?.Invoke(sender, args);
+        }
     }
 }
